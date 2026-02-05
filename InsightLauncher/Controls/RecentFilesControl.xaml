@@ -1,0 +1,163 @@
+<UserControl x:Class="InsightLauncher.Controls.RecentFilesControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:InsightLauncher.ViewModels"
+             xmlns:models="clr-namespace:InsightLauncher.Models">
+
+    <Border Style="{StaticResource CardStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- ヘッダー -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🕐" FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="最近使ったファイル"
+                               Style="{StaticResource SectionHeader}"
+                               Margin="8,0,0,0"/>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Style="{StaticResource IconButton}"
+                        Command="{Binding RefreshCommand}">
+                    <TextBlock Text="🔄" FontSize="12"/>
+                </Button>
+            </Grid>
+
+            <!-- フィルター -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+                <Button Content="すべて"
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Command="{Binding SetFilterCommand}"
+                        CommandParameter="{x:Null}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedFilter}" Value="{x:Null}">
+                                    <Setter Property="Background" Value="#4B5563"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Excel"
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Command="{Binding SetFilterCommand}"
+                        CommandParameter="{x:Static models:FileType.Excel}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedFilter}" Value="{x:Static models:FileType.Excel}">
+                                    <Setter Property="Background" Value="#166534"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="Word"
+                        Padding="12,6"
+                        Margin="0,0,8,0"
+                        Command="{Binding SetFilterCommand}"
+                        CommandParameter="{x:Static models:FileType.Word}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedFilter}" Value="{x:Static models:FileType.Word}">
+                                    <Setter Property="Background" Value="#1D4ED8"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="PowerPoint"
+                        Padding="12,6"
+                        Command="{Binding SetFilterCommand}"
+                        CommandParameter="{x:Static models:FileType.PowerPoint}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedFilter}" Value="{x:Static models:FileType.PowerPoint}">
+                                    <Setter Property="Background" Value="#C2410C"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+
+            <!-- ファイルリスト -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding FilteredFiles}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:RecentFile}">
+                            <Button Style="{StaticResource FileItemButton}"
+                                    Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}"
+                                    Margin="0,0,8,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0"
+                                            Background="#1F2937"
+                                            CornerRadius="6"
+                                            Padding="8"
+                                            Margin="0,0,12,0">
+                                        <TextBlock FontSize="24"
+                                                   Text="{Binding Type, Converter={StaticResource FileTypeToIconConverter}}"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   FontWeight="Medium"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Foreground="{StaticResource TextMutedBrush}"
+                                                   FontSize="11"
+                                                   Margin="0,4,0,0"
+                                                   Text="{Binding LastModified, Converter={StaticResource DateToRelativeConverter}}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- フッター -->
+            <Button Grid.Row="3"
+                    Style="{StaticResource GhostButton}"
+                    Command="{Binding OpenExplorerCommand}"
+                    Margin="0,12,0,0"
+                    HorizontalAlignment="Stretch">
+                <TextBlock Foreground="{StaticResource TextSecondaryBrush}">
+                    <Run Text="📂"/>
+                    <Run Text=" エクスプローラーを開く"/>
+                </TextBlock>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

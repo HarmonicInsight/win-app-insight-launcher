@@ -1,0 +1,166 @@
+<Window x:Class="InsightLauncher.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:InsightLauncher.Controls"
+        xmlns:vm="clr-namespace:InsightLauncher.ViewModels"
+        Title="Insight Launcher"
+        Height="800" Width="1200"
+        MinHeight="600" MinWidth="900"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Border Background="{StaticResource BackgroundGradient}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="36"/>
+            </Grid.RowDefinitions>
+
+            <!-- タイトルバー -->
+            <Border Grid.Row="0"
+                    Background="#1A1F2E"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="8,8,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- ロゴ・タイトル -->
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="16,0">
+                        <TextBlock Text="🚀"
+                                   FontSize="16"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="Insight Launcher"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,0,0"/>
+                    </StackPanel>
+
+                    <!-- ウィンドウコントロール -->
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal">
+                        <Button Style="{StaticResource WindowControlButton}"
+                                Command="{Binding MinimizeCommand}">
+                            <TextBlock Text="─" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </Button>
+                        <Button Style="{StaticResource WindowControlButton}"
+                                Command="{Binding MaximizeCommand}">
+                            <TextBlock Text="□" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </Button>
+                        <Button Style="{StaticResource CloseButton}"
+                                Command="{Binding CloseCommand}">
+                            <TextBlock Text="✕" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- メインコンテンツ -->
+            <Grid Grid.Row="1" Margin="24">
+                <Grid.ColumnDefinitions>
+                    <!-- 左: ローカル領域（日時/天気 + カレンダー） -->
+                    <ColumnDefinition Width="280"/>
+                    <ColumnDefinition Width="24"/>
+                    <!-- 中央: ローカル領域（最近使ったファイル） -->
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <!-- 右: 集中管理領域（お知らせ + アンケート） -->
+                    <ColumnDefinition Width="340"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 左カラム -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="16"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 日時・天気 -->
+                    <controls:DateTimeWeatherControl Grid.Row="0"/>
+
+                    <!-- カレンダー -->
+                    <controls:CalendarControl Grid.Row="2"/>
+                </Grid>
+
+                <!-- 中央カラム: 最近使ったファイル -->
+                <controls:RecentFilesControl Grid.Column="2"/>
+
+                <!-- 右カラム: 集中管理領域 -->
+                <Grid Grid.Column="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="16"/>
+                        <RowDefinition Height="280"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- お知らせ -->
+                    <controls:AnnouncementsControl Grid.Row="0"/>
+
+                    <!-- アンケート -->
+                    <controls:SurveyControl Grid.Row="2"/>
+                </Grid>
+            </Grid>
+
+            <!-- フッター -->
+            <Border Grid.Row="2"
+                    Background="#1A1F2E"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,1,0,0"
+                    CornerRadius="0,0,8,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- ローカル領域ラベル -->
+                    <TextBlock Grid.Column="0"
+                               Text="📁 ローカル"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               FontSize="11"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Margin="16,0"/>
+
+                    <!-- バージョン -->
+                    <TextBlock Grid.Column="1"
+                               Text="Insight Launcher v1.0.0"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               FontSize="11"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
+                    <!-- 集中管理ラベル -->
+                    <TextBlock Grid.Column="2"
+                               Text="🏢 集中管理"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               FontSize="11"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
