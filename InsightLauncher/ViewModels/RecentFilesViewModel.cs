@@ -9,6 +9,7 @@ namespace InsightLauncher.ViewModels;
 public partial class RecentFilesViewModel : ObservableObject
 {
     private readonly IRecentFilesService _recentFilesService;
+    private readonly ISettingsService _settingsService;
 
     [ObservableProperty]
     private ObservableCollection<RecentFile> _files = new();
@@ -17,15 +18,19 @@ public partial class RecentFilesViewModel : ObservableObject
     private ObservableCollection<RecentFile> _filteredFiles = new();
 
     [ObservableProperty]
+    private ObservableCollection<RecentFile> _pinnedFiles = new();
+
+    [ObservableProperty]
     private FileType? _selectedFilter;
 
     [ObservableProperty]
     private bool _isLoading;
 
-    public RecentFilesViewModel(IRecentFilesService recentFilesService)
+    public RecentFilesViewModel(IRecentFilesService recentFilesService, ISettingsService settingsService)
     {
         _recentFilesService = recentFilesService;
-        LoadFilesAsync();
+        _settingsService = settingsService;
+        _ = LoadFilesAsync();
     }
 
     [RelayCommand]
@@ -53,6 +58,22 @@ public partial class RecentFilesViewModel : ObservableObject
         _recentFilesService.OpenExplorer();
     }
 
+    [RelayCommand]
+    private void TogglePin(RecentFile file)
+    {
+        if (_settingsService.IsFilePinned(file.Path))
+        {
+            _settingsService.RemovePinnedFile(file.Path);
+        }
+        else
+        {
+            _settingsService.AddPinnedFile(file.Path);
+        }
+        ApplyFilter();
+    }
+
+    public bool IsFilePinned(string path) => _settingsService.IsFilePinned(path);
+
     private async Task LoadFilesAsync()
     {
         IsLoading = true;
@@ -75,9 +96,23 @@ public partial class RecentFilesViewModel : ObservableObject
     private void ApplyFilter()
     {
         FilteredFiles.Clear();
+        PinnedFiles.Clear();
+
+        var pinnedPaths = _settingsService.Settings.PinnedFileIds;
+
+        // ピン留めファイル
+        foreach (var file in Files.Where(f => pinnedPaths.Contains(f.Path)))
+        {
+            if (!SelectedFilter.HasValue || file.Type == SelectedFilter.Value)
+            {
+                PinnedFiles.Add(file);
+            }
+        }
+
+        // 通常ファイル（ピン留め以外）
         var filtered = SelectedFilter.HasValue
-            ? Files.Where(f => f.Type == SelectedFilter.Value)
-            : Files;
+            ? Files.Where(f => f.Type == SelectedFilter.Value && !pinnedPaths.Contains(f.Path))
+            : Files.Where(f => !pinnedPaths.Contains(f.Path));
 
         foreach (var file in filtered)
         {

@@ -1,0 +1,192 @@
+<UserControl x:Class="InsightLauncher.Controls.QuickActionsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:InsightLauncher.Models">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ヘッダー -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="⚡" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="クイックアクション"
+                           Style="{StaticResource SectionHeader}"
+                           Margin="8,0,0,0"/>
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Style="{StaticResource GhostButton}"
+                    Command="{Binding StartEditingCommand}"
+                    Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+                <TextBlock Text="編集" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+            </Button>
+        </Grid>
+
+        <!-- アクショングリッド -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- アクション一覧 -->
+                <ItemsControl ItemsSource="{Binding QuickActions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:QuickAction}">
+                            <Grid Margin="0,0,8,8" Width="80">
+                                <Button Command="{Binding DataContext.ExecuteActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Visibility="{Binding DataContext.IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="{StaticResource BackgroundSecondaryBrush}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                            <Setter Property="Cursor" Value="Hand"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="8"
+                                                                Padding="12">
+                                                            <StackPanel HorizontalAlignment="Center">
+                                                                <TextBlock Text="{Binding Icon}"
+                                                                           FontSize="24"
+                                                                           HorizontalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                                           FontSize="11"
+                                                                           HorizontalAlignment="Center"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           Margin="0,8,0,0"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="{StaticResource BackgroundHoverBrush}"/>
+                                                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- 編集モード -->
+                                <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Visibility="{Binding DataContext.IsEditing, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <Grid>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding Icon}"
+                                                       FontSize="24"
+                                                       HorizontalAlignment="Center"
+                                                       Opacity="0.5"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       Foreground="{StaticResource TextMutedBrush}"
+                                                       FontSize="11"
+                                                       HorizontalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Margin="0,8,0,0"/>
+                                        </StackPanel>
+                                        <Button Style="{StaticResource IconButton}"
+                                                Command="{Binding DataContext.RemoveActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Width="20" Height="20"
+                                                Margin="-8,-8,0,0">
+                                            <TextBlock Text="✕" FontSize="10" Foreground="{StaticResource ErrorBrush}"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- 新規追加フォーム（編集モード時） -->
+                <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="16"
+                        Margin="0,8,0,0"
+                        Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="新しいアクションを追加"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   FontWeight="Medium"
+                                   Margin="0,0,0,12"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="名前" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,8"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding NewActionName, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="{StaticResource BackgroundCardBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     Padding="8"
+                                     Margin="0,0,0,8"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="URL/パス" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,8"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NewActionPath, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="{StaticResource BackgroundCardBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     Padding="8"
+                                     Margin="0,0,0,8"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="アイコン" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NewActionIcon, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="{StaticResource BackgroundCardBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     Padding="8"
+                                     Width="60"
+                                     HorizontalAlignment="Left"/>
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                            <Button Style="{StaticResource GhostButton}"
+                                    Command="{Binding StopEditingCommand}"
+                                    Content="完了"
+                                    Padding="12,6"/>
+                            <Button Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding AddActionCommand}"
+                                    Content="追加"
+                                    Padding="16,6"
+                                    Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

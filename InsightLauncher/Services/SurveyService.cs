@@ -1,3 +1,4 @@
+using System.Net.Http;
 using InsightLauncher.Models;
 
 namespace InsightLauncher.Services;

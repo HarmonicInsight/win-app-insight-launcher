@@ -35,7 +35,7 @@ public partial class SurveyViewModel : ObservableObject
     public SurveyViewModel(ISurveyService surveyService)
     {
         _surveyService = surveyService;
-        LoadSurveysAsync();
+        _ = LoadSurveysAsync();
     }
 
     [RelayCommand]

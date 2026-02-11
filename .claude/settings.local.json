@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run)",
+      "Bash(dotnet clean:*)",
+      "Bash(move:*)",
+      "Bash(if not exist \"C:\\\\dev\\\\Insight-launcher\\\\InsightLauncher\\\\Converters\" mkdir \"C:\\\\dev\\\\Insight-launcher\\\\InsightLauncher\\\\Converters\")",
+      "Bash(copy \"C:\\\\dev\\\\Insight-launcher\\\\InsightLauncher\\\\Resources\\\\Converters.cs\" \"C:\\\\dev\\\\Insight-launcher\\\\InsightLauncher\\\\Converters\\\\Converters.cs\")",
+      "Bash(del \"C:\\\\dev\\\\Insight-launcher\\\\InsightLauncher\\\\Resources\\\\Converters.cs\")",
+      "Bash(powershell -Command:*)",
+      "Bash(start \"\" dotnet run)",
+      "Bash(./InsightLauncher/bin/Debug/net8.0-windows/InsightLauncher.exe:*)",
+      "Bash(git clone:*)",
+      "Bash(timeout 5 dotnet run:*)"
+    ]
+  }
+}

@@ -42,11 +42,11 @@
                 <ItemsControl ItemsSource="{Binding Announcements}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:Announcement}">
-                            <Border Background="#374151"
+                            <Border Background="{StaticResource BackgroundSecondaryBrush}"
                                     CornerRadius="8"
                                     Padding="12"
                                     Margin="0,0,0,8"
-                                    BorderThickness="4,0,0,0"
+                                    BorderThickness="4,1,1,1"
                                     BorderBrush="{Binding Type, Converter={StaticResource AnnouncementTypeToColorConverter}}"
                                     Cursor="Hand">
                                 <Grid>

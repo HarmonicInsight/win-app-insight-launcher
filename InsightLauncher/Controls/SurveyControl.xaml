@@ -122,7 +122,7 @@
                                     CommandParameter="{Binding Id}">
                                 <Button.Style>
                                     <Style TargetType="Button">
-                                        <Setter Property="Background" Value="#374151"/>
+                                        <Setter Property="Background" Value="{StaticResource BackgroundSecondaryBrush}"/>
                                         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
                                         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                                         <Setter Property="BorderThickness" Value="1"/>
@@ -148,9 +148,9 @@
                                                         <Binding Path="DataContext.SelectedOptionId" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
-                                                <Setter Property="Background" Value="#1E3A5F"/>
+                                                <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
                                                 <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

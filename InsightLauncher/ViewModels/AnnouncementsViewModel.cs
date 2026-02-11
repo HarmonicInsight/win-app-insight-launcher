@@ -22,7 +22,7 @@ public partial class AnnouncementsViewModel : ObservableObject
     public AnnouncementsViewModel(IAnnouncementService announcementService)
     {
         _announcementService = announcementService;
-        LoadAnnouncementsAsync();
+        _ = LoadAnnouncementsAsync();
     }
 
     [RelayCommand]

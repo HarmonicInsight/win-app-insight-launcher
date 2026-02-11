@@ -4,144 +4,279 @@
              xmlns:vm="clr-namespace:InsightLauncher.ViewModels"
              xmlns:models="clr-namespace:InsightLauncher.Models">
 
-    <Border Style="{StaticResource CardStyle}">
-        <Grid>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ヘッダー -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="📅" FontSize="18" VerticalAlignment="Center"/>
+                <TextBlock Text="カレンダー"
+                           Style="{StaticResource SectionHeader}"
+                           Margin="8,0,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Style="{StaticResource GhostButton}"
+                        Command="{Binding GoToTodayCommand}"
+                        Padding="8,4"
+                        Margin="0,0,8,0">
+                    <TextBlock Text="今日" FontSize="12" Foreground="{StaticResource PrimaryBrush}"/>
+                </Button>
+                <Button Style="{StaticResource IconButton}"
+                        Command="{Binding RefreshCommand}">
+                    <TextBlock Text="🔄" FontSize="12"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- 連携状態 -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,16">
+            <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="8,4"
+                    Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8"
+                             Fill="{Binding IsOutlookConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Outlook}"/>
+                    <TextBlock Text="Outlook"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               Margin="6,0,0,0"/>
+                </StackPanel>
+            </Border>
+            <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="8,4">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="8" Height="8"
+                             Fill="{Binding IsGoogleConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Google}"/>
+                    <TextBlock Text="Google"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               Margin="6,0,0,0"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- 月カレンダー -->
+        <Border Grid.Row="2"
+                Background="{StaticResource BackgroundSecondaryBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- 月ナビゲーション -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Style="{StaticResource IconButton}"
+                            Command="{Binding PreviousMonthCommand}">
+                        <TextBlock Text="◀" FontSize="10"/>
+                    </Button>
+
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding DisplayMonthString}"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontWeight="SemiBold"
+                               FontSize="14"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="2"
+                            Style="{StaticResource IconButton}"
+                            Command="{Binding NextMonthCommand}">
+                        <TextBlock Text="▶" FontSize="10"/>
+                    </Button>
+                </Grid>
+
+                <!-- 曜日ヘッダー -->
+                <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,4">
+                    <TextBlock Text="日" Foreground="{StaticResource ErrorBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                    <TextBlock Text="月" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                    <TextBlock Text="火" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                    <TextBlock Text="水" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                    <TextBlock Text="木" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                    <TextBlock Text="金" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                    <TextBlock Text="土" Foreground="{StaticResource InfoBrush}" FontSize="11" HorizontalAlignment="Center" FontWeight="Medium"/>
+                </UniformGrid>
+
+                <!-- カレンダーグリッド -->
+                <ItemsControl Grid.Row="2" ItemsSource="{Binding CalendarDays}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="7"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:CalendarDay}">
+                            <Button Command="{Binding DataContext.SelectDateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}"
+                                    Width="32" Height="32"
+                                    Margin="1">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="DayBorder"
+                                                            Background="{TemplateBinding Background}"
+                                                            CornerRadius="4">
+                                                        <TextBlock x:Name="DayText"
+                                                                   Text="{Binding Day}"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="12"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="DayBorder" Property="Background" Value="{StaticResource BackgroundHoverBrush}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <!-- 当月以外は薄く -->
+                                            <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+                                                <Setter Property="Opacity" Value="0.3"/>
+                                            </DataTrigger>
+                                            <!-- 今日 -->
+                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                                            </DataTrigger>
+                                            <!-- 選択日 -->
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </DataTrigger>
+                                            <!-- 週末（日曜） -->
+                                            <DataTrigger Binding="{Binding Date.DayOfWeek}" Value="Sunday">
+                                                <Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/>
+                                            </DataTrigger>
+                                            <!-- 週末（土曜） -->
+                                            <DataTrigger Binding="{Binding Date.DayOfWeek}" Value="Saturday">
+                                                <Setter Property="Foreground" Value="{StaticResource InfoBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+
+        <!-- 選択日の表示 -->
+        <Border Grid.Row="3"
+                Background="{StaticResource PrimaryLightBrush}"
+                CornerRadius="6"
+                Padding="12,8"
+                Margin="0,0,0,12">
+            <TextBlock Text="{Binding SelectedDateString}"
+                       Foreground="{StaticResource PrimaryBrush}"
+                       FontWeight="SemiBold"
+                       FontSize="13"
+                       HorizontalAlignment="Center"/>
+        </Border>
+
+        <!-- 予定リスト -->
+        <Grid Grid.Row="4">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- ヘッダー -->
-            <Grid Grid.Row="0" Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0"
+                       Text="予定"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       FontWeight="Medium"
+                       FontSize="13"
+                       Margin="0,0,0,8"/>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="カレンダー"
-                               Style="{StaticResource SectionHeader}"
-                               Margin="8,0,0,0"/>
-                </StackPanel>
-
-                <Button Grid.Column="1"
-                        Style="{StaticResource IconButton}"
-                        Command="{Binding RefreshCommand}">
-                    <TextBlock Text="🔄" FontSize="12"/>
-                </Button>
-            </Grid>
-
-            <!-- 連携状態 -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-                <Border Background="#1E3A5F"
-                        CornerRadius="4"
-                        Padding="8,4"
-                        Margin="0,0,8,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{Binding IsOutlookConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Outlook}"/>
-                        <TextBlock Text="Outlook"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="11"
-                                   Margin="6,0,0,0"/>
-                    </StackPanel>
-                </Border>
-                <Border Background="#3D1F1F"
-                        CornerRadius="4"
-                        Padding="8,4">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{Binding IsGoogleConnected, Converter={StaticResource BoolToColorConverter}, ConverterParameter=Google}"/>
-                        <TextBlock Text="Google"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="11"
-                                   Margin="6,0,0,0"/>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-
-            <!-- 日付ナビゲーション -->
-            <Grid Grid.Row="2" Margin="0,0,0,12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <Button Grid.Column="0"
-                        Style="{StaticResource IconButton}"
-                        Command="{Binding PreviousDayCommand}">
-                    <TextBlock Text="◀" FontSize="10"/>
-                </Button>
-
-                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding SelectedDateString}"
-                               Foreground="{StaticResource TextPrimaryBrush}"
-                               FontWeight="Medium"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="今日"
-                               Foreground="{StaticResource PrimaryBrush}"
-                               FontSize="11"
-                               HorizontalAlignment="Center"
-                               Visibility="{Binding IsToday, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                </StackPanel>
-
-                <Button Grid.Column="2"
-                        Style="{StaticResource IconButton}"
-                        Command="{Binding NextDayCommand}">
-                    <TextBlock Text="▶" FontSize="10"/>
-                </Button>
-            </Grid>
-
-            <!-- 予定リスト -->
-            <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Events}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:CalendarEvent}">
-                            <Border Background="#374151"
+                            <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
                                     CornerRadius="6"
-                                    Padding="10"
+                                    Padding="12"
                                     Margin="0,0,0,8">
                                 <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Row="0" Orientation="Horizontal">
-                                        <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="11">
+                                    <!-- 時間表示 -->
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="0,0,12,0" Width="50">
+                                        <TextBlock Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Medium" FontSize="12">
                                             <Run Text="{Binding StartTime, StringFormat=HH:mm}"/>
-                                            <Run Text=" - "/>
+                                        </TextBlock>
+                                        <TextBlock Foreground="{StaticResource TextMutedBrush}" FontSize="11">
                                             <Run Text="{Binding EndTime, StringFormat=HH:mm}"/>
                                         </TextBlock>
-                                        <Border Margin="8,0,0,0"
-                                                CornerRadius="3"
-                                                Padding="4,1"
-                                                Background="{Binding Source, Converter={StaticResource SourceToColorConverter}}">
-                                            <TextBlock Text="{Binding Source}"
-                                                       Foreground="White"
-                                                       FontSize="9"/>
-                                        </Border>
                                     </StackPanel>
 
-                                    <TextBlock Grid.Row="1"
-                                               Text="{Binding Title}"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontWeight="Medium"
-                                               TextTrimming="CharacterEllipsis"
-                                               Margin="0,4,0,0"/>
+                                    <!-- イベント詳細 -->
+                                    <StackPanel Grid.Column="1">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <TextBlock Text="{Binding Title}"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       FontWeight="Medium"
+                                                       FontSize="13"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <Border Margin="8,0,0,0"
+                                                    CornerRadius="3"
+                                                    Padding="4,1"
+                                                    Background="{Binding Source, Converter={StaticResource SourceToColorConverter}}">
+                                                <TextBlock Text="{Binding Source}"
+                                                           Foreground="White"
+                                                           FontSize="9"/>
+                                            </Border>
+                                        </StackPanel>
 
-                                    <TextBlock Grid.Row="2"
-                                               Text="{Binding Location}"
-                                               Foreground="{StaticResource TextMutedBrush}"
-                                               FontSize="11"
-                                               Visibility="{Binding Location, Converter={StaticResource NullToVisibilityConverter}}"
-                                               Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding Location}"
+                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   FontSize="11"
+                                                   Visibility="{Binding Location, Converter={StaticResource NullToVisibilityConverter}}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -150,7 +285,7 @@
             </ScrollViewer>
 
             <!-- フッター -->
-            <Grid Grid.Row="4" Margin="0,8,0,0">
+            <Grid Grid.Row="2" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -160,9 +295,8 @@
                         Style="{StaticResource GhostButton}"
                         Command="{Binding OpenOutlookCalendarCommand}"
                         Margin="0,0,4,0">
-                    <TextBlock Foreground="#3B82F6" FontSize="11">
-                        <Run Text="↗"/>
-                        <Run Text=" Outlook"/>
+                    <TextBlock Foreground="{StaticResource InfoBrush}" FontSize="11">
+                        <Run Text="Outlookを開く"/>
                     </TextBlock>
                 </Button>
 
@@ -170,12 +304,11 @@
                         Style="{StaticResource GhostButton}"
                         Command="{Binding OpenGoogleCalendarCommand}"
                         Margin="4,0,0,0">
-                    <TextBlock Foreground="#EF4444" FontSize="11">
-                        <Run Text="↗"/>
-                        <Run Text=" Google"/>
+                    <TextBlock Foreground="{StaticResource ErrorBrush}" FontSize="11">
+                        <Run Text="Googleを開く"/>
                     </TextBlock>
                 </Button>
             </Grid>
         </Grid>
-    </Border>
+    </Grid>
 </UserControl>

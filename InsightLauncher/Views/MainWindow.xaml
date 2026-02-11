@@ -3,164 +3,405 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:InsightLauncher.Controls"
         xmlns:vm="clr-namespace:InsightLauncher.ViewModels"
+        xmlns:models="clr-namespace:InsightLauncher.Models"
         Title="Insight Launcher"
         Height="800" Width="1200"
         MinHeight="600" MinWidth="900"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize">
 
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
+    <!-- WindowChrome for custom resize handling -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0"
+                      ResizeBorderThickness="8"
+                      GlassFrameThickness="0"
+                      CornerRadius="0"/>
+    </WindowChrome.WindowChrome>
 
-    <Border Background="{StaticResource BackgroundGradient}"
-            BorderBrush="{StaticResource BorderBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="36"/>
-            </Grid.RowDefinitions>
+    <Grid Background="Transparent">
+        <!-- メインコンテンツ -->
+        <Border Background="{StaticResource BackgroundGradient}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Margin="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="36"/>
+                </Grid.RowDefinitions>
 
-            <!-- タイトルバー -->
-            <Border Grid.Row="0"
-                    Background="#1A1F2E"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="0,0,0,1"
-                    CornerRadius="8,8,0,0"
-                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-                <Grid>
+                <!-- タイトルバー -->
+                <Border Grid.Row="0"
+                        Background="{StaticResource BackgroundSecondaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="8,8,0,0"
+                        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- ロゴ・タイトル -->
+                        <StackPanel Grid.Column="0"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="16,0">
+                            <TextBlock Text="Insight Launcher"
+                                       Foreground="{StaticResource PrimaryBrush}"
+                                       FontFamily="Segoe UI Variable, Segoe UI, Yu Gothic UI"
+                                       FontWeight="SemiBold"
+                                       FontSize="15"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- 検索バー -->
+                        <Grid Grid.Column="1" Margin="24,0" MaxWidth="500">
+                            <Border Background="{StaticResource BackgroundCardBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="12,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="🔍"
+                                               FontSize="14"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"
+                                               Opacity="0.5"/>
+
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                             Background="Transparent"
+                                             Foreground="{StaticResource TextPrimaryBrush}"
+                                             BorderThickness="0"
+                                             VerticalAlignment="Center"
+                                             FontSize="13">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="TextBox">
+                                                            <Grid>
+                                                                <TextBlock Text="ファイル、予定、お知らせを検索..."
+                                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                                           VerticalAlignment="Center"
+                                                                           Visibility="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                                                <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center"/>
+                                                            </Grid>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+
+                                    <Button Grid.Column="2"
+                                            Style="{StaticResource IconButton}"
+                                            Command="{Binding ClearSearchCommand}"
+                                            Visibility="{Binding SearchQuery, Converter={StaticResource NullToVisibilityConverter}}"
+                                            Width="24" Height="24">
+                                        <TextBlock Text="✕" FontSize="10" Foreground="{StaticResource TextMutedBrush}"/>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!-- 検索結果ドロップダウン -->
+                            <Popup IsOpen="{Binding ShowSearchResults}"
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource AncestorType=Grid}}"
+                                   Placement="Bottom"
+                                   StaysOpen="False"
+                                   AllowsTransparency="True">
+                                <Border Background="{StaticResource BackgroundCardBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Width="500"
+                                        MaxHeight="400"
+                                        Margin="0,4,0,0">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                                        <ItemsControl ItemsSource="{Binding SearchResults}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type models:SearchResult}">
+                                                    <Button Command="{Binding DataContext.ExecuteSearchResultCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}"
+                                                            Margin="0,0,0,4">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="BorderThickness" Value="0"/>
+                                                                <Setter Property="Cursor" Value="Hand"/>
+                                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="Button">
+                                                                            <Border Background="{TemplateBinding Background}"
+                                                                                    CornerRadius="6"
+                                                                                    Padding="12,8">
+                                                                                <ContentPresenter/>
+                                                                            </Border>
+                                                                            <ControlTemplate.Triggers>
+                                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                                    <Setter Property="Background" Value="{StaticResource BackgroundHoverBrush}"/>
+                                                                                </Trigger>
+                                                                            </ControlTemplate.Triggers>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding Icon}"
+                                                                       FontSize="18"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,12,0"/>
+                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Title}"
+                                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                                           FontWeight="Medium"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                                <TextBlock Text="{Binding Subtitle}"
+                                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                                           FontSize="11"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
+                        <!-- テーマ切替 -->
+                        <Button Grid.Column="2"
+                                Style="{StaticResource IconButton}"
+                                Command="{Binding ToggleThemeCommand}"
+                                ToolTip="テーマ切替"
+                                Margin="0,0,8,0">
+                            <TextBlock FontSize="14">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="🌙"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDarkMode}" Value="False">
+                                                <Setter Property="Text" Value="☀️"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+
+                        <!-- ウィンドウコントロール -->
+                        <StackPanel Grid.Column="3"
+                                    Orientation="Horizontal">
+                            <Button Style="{StaticResource WindowControlButton}"
+                                    Command="{Binding MinimizeCommand}">
+                                <TextBlock Text="─" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </Button>
+                            <Button Style="{StaticResource WindowControlButton}"
+                                    Command="{Binding MaximizeCommand}">
+                                <TextBlock Text="□" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </Button>
+                            <Button Style="{StaticResource CloseButton}"
+                                    Command="{Binding CloseCommand}">
+                                <TextBlock Text="✕" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- メインコンテンツ -->
+                <Grid Grid.Row="1" Margin="24">
                     <Grid.ColumnDefinitions>
+                        <!-- 左: 日時/天気 + クイックアクション -->
+                        <ColumnDefinition Width="260"/>
+                        <ColumnDefinition Width="24"/>
+                        <!-- 右: タブコンテンツ -->
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- ロゴ・タイトル -->
-                    <StackPanel Grid.Column="0"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Center"
-                                Margin="16,0">
-                        <TextBlock Text="🚀"
-                                   FontSize="16"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Text="Insight Launcher"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                   FontWeight="SemiBold"
-                                   FontSize="14"
+                    <!-- 左カラム -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="16"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 日時・天気 -->
+                        <controls:DateTimeWeatherControl Grid.Row="0"/>
+
+                        <!-- クイックアクション -->
+                        <Border Grid.Row="2"
+                                Style="{StaticResource CardStyle}">
+                            <controls:QuickActionsControl/>
+                        </Border>
+                    </Grid>
+
+                    <!-- 右カラム: タブコントロール -->
+                    <TabControl Grid.Column="2"
+                                Style="{StaticResource MainTabControl}">
+                        <!-- ファイル -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <TextBlock Text="ファイル"/>
+                            </TabItem.Header>
+                            <controls:RecentFilesControl/>
+                        </TabItem>
+
+                        <!-- カレンダー -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <TextBlock Text="カレンダー"/>
+                            </TabItem.Header>
+                            <controls:CalendarControl/>
+                        </TabItem>
+
+                        <!-- タスク -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="タスク"/>
+                                    <Border Background="{StaticResource PrimaryBrush}"
+                                            CornerRadius="8"
+                                            Padding="6,2"
+                                            Margin="6,0,0,0"
+                                            Visibility="{Binding PendingTodoCount, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding PendingTodoCount}"
+                                                   Foreground="White"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </TabItem.Header>
+                            <controls:TodoControl/>
+                        </TabItem>
+
+                        <!-- お知らせ -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="お知らせ"/>
+                                    <Border Background="{StaticResource ErrorBrush}"
+                                            CornerRadius="8"
+                                            Padding="6,2"
+                                            Margin="6,0,0,0"
+                                            Visibility="{Binding UnreadAnnouncementCount, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding UnreadAnnouncementCount}"
+                                                   Foreground="White"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </TabItem.Header>
+                            <controls:AnnouncementsControl/>
+                        </TabItem>
+
+                        <!-- アンケート -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="アンケート"/>
+                                    <Border Background="{StaticResource WarningBrush}"
+                                            CornerRadius="8"
+                                            Padding="6,2"
+                                            Margin="6,0,0,0"
+                                            Visibility="{Binding PendingSurveyCount, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding PendingSurveyCount}"
+                                                   Foreground="White"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </TabItem.Header>
+                            <controls:SurveyControl/>
+                        </TabItem>
+
+                        <!-- チーム -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <TextBlock Text="チーム"/>
+                            </TabItem.Header>
+                            <controls:TeamControl/>
+                        </TabItem>
+
+                        <!-- 設定 -->
+                        <TabItem Style="{StaticResource MainTabItem}">
+                            <TabItem.Header>
+                                <TextBlock Text="設定"/>
+                            </TabItem.Header>
+                            <controls:SettingsControl/>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+
+                <!-- フッター -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource BackgroundSecondaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,1,0,0"
+                        CornerRadius="0,0,8,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- ローカル領域ラベル -->
+                        <TextBlock Grid.Column="0"
+                                   Text="ローカル"
+                                   FontFamily="Segoe UI Variable, Segoe UI, Yu Gothic UI"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   FontSize="11"
+                                   HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
-                                   Margin="8,0,0,0"/>
-                    </StackPanel>
+                                   Margin="16,0"/>
 
-                    <!-- ウィンドウコントロール -->
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal">
-                        <Button Style="{StaticResource WindowControlButton}"
-                                Command="{Binding MinimizeCommand}">
-                            <TextBlock Text="─" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
-                        </Button>
-                        <Button Style="{StaticResource WindowControlButton}"
-                                Command="{Binding MaximizeCommand}">
-                            <TextBlock Text="□" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
-                        </Button>
-                        <Button Style="{StaticResource CloseButton}"
-                                Command="{Binding CloseCommand}">
-                            <TextBlock Text="✕" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
+                        <!-- バージョン -->
+                        <TextBlock Grid.Column="1"
+                                   Text="Insight Launcher v1.0.0"
+                                   FontFamily="Segoe UI Variable, Segoe UI, Yu Gothic UI"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   FontSize="11"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
 
-            <!-- メインコンテンツ -->
-            <Grid Grid.Row="1" Margin="24">
-                <Grid.ColumnDefinitions>
-                    <!-- 左: ローカル領域（日時/天気 + カレンダー） -->
-                    <ColumnDefinition Width="280"/>
-                    <ColumnDefinition Width="24"/>
-                    <!-- 中央: ローカル領域（最近使ったファイル） -->
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="24"/>
-                    <!-- 右: 集中管理領域（お知らせ + アンケート） -->
-                    <ColumnDefinition Width="340"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- 左カラム -->
-                <Grid Grid.Column="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="16"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- 日時・天気 -->
-                    <controls:DateTimeWeatherControl Grid.Row="0"/>
-
-                    <!-- カレンダー -->
-                    <controls:CalendarControl Grid.Row="2"/>
-                </Grid>
-
-                <!-- 中央カラム: 最近使ったファイル -->
-                <controls:RecentFilesControl Grid.Column="2"/>
-
-                <!-- 右カラム: 集中管理領域 -->
-                <Grid Grid.Column="4">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="16"/>
-                        <RowDefinition Height="280"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- お知らせ -->
-                    <controls:AnnouncementsControl Grid.Row="0"/>
-
-                    <!-- アンケート -->
-                    <controls:SurveyControl Grid.Row="2"/>
-                </Grid>
+                        <!-- 集中管理ラベル -->
+                        <TextBlock Grid.Column="2"
+                                   Text="集中管理"
+                                   FontFamily="Segoe UI Variable, Segoe UI, Yu Gothic UI"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   FontSize="11"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"/>
+                    </Grid>
+                </Border>
             </Grid>
-
-            <!-- フッター -->
-            <Border Grid.Row="2"
-                    Background="#1A1F2E"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="0,1,0,0"
-                    CornerRadius="0,0,8,8">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- ローカル領域ラベル -->
-                    <TextBlock Grid.Column="0"
-                               Text="📁 ローカル"
-                               Foreground="{StaticResource TextMutedBrush}"
-                               FontSize="11"
-                               HorizontalAlignment="Left"
-                               VerticalAlignment="Center"
-                               Margin="16,0"/>
-
-                    <!-- バージョン -->
-                    <TextBlock Grid.Column="1"
-                               Text="Insight Launcher v1.0.0"
-                               Foreground="{StaticResource TextMutedBrush}"
-                               FontSize="11"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-
-                    <!-- 集中管理ラベル -->
-                    <TextBlock Grid.Column="2"
-                               Text="🏢 集中管理"
-                               Foreground="{StaticResource TextMutedBrush}"
-                               FontSize="11"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Center"
-                               Margin="0,0,16,0"/>
-                </Grid>
-            </Border>
-        </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </Window>

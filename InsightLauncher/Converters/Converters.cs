@@ -4,7 +4,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using InsightLauncher.Models;
 
-namespace InsightLauncher.Resources;
+namespace InsightLauncher.Converters;
 
 public class BoolToVisibilityConverter : IValueConverter
 {
